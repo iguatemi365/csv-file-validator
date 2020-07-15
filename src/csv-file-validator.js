@@ -17,10 +17,11 @@
      * @param {Object} config
      */
     function CSVFileValidator(csvFile, config) {
+        var reader = new FileReader();
         return new Promise(function(resolve, reject) {
             Papa.parse(csvFile, {
                 complete: function(results) {
-                    resolve(_prepareDataAndValidateFile(results.data, config));
+                    resolve(_prepareDataAndValidateFile(results, config));
                 },
                 error: function(error, file) {
                     reject({ error: error, file: file });
@@ -34,11 +35,27 @@
      * @param {Object} config
      * @private
      */
-    function _prepareDataAndValidateFile(csvData, config) {
+    function _prepareDataAndValidateFile(csvResult, config) {
         const file = {
             inValidMessages: [],
             data: []
         };
+
+        var csvData = csvResult.data;
+        var generalConfig = config.generalConfig;
+
+        if(generalConfig !== undefined){
+
+            if(csvResult.meta.delimiter !== generalConfig.requiredDelimiter
+                && generalConfig.requiredDelimiter !== undefined){
+                file.inValidMessages.push(
+                    _isFunction(generalConfig.requiredDelimiterError)
+                        ? generalConfig.requiredDelimiterError()
+                        : 'The CSV has incorrect delimiters. The correct is ' + generalConfig.requiredDelimiter
+                );
+            }
+
+        }
 
         csvData.forEach(function(row, rowIndex) {
             const columnData = {};
@@ -57,6 +74,7 @@
             }
 
             row.forEach(function(columnValue, columnIndex) {
+
                 const valueConfig = config.headers[columnIndex];
 
                 if (!valueConfig) {
@@ -66,9 +84,9 @@
                 // header validation
                 if (rowIndex === 0) {
 
-                  if(valueConfig.convertNameToUpperCase){
-                    columnValue = columnValue.toUpperCase();
-                  }
+                    if(valueConfig.convertNameToUpperCase){
+                      columnValue = columnValue.toUpperCase();
+                    }
 
                     if (valueConfig.name !== columnValue) {
                         file.inValidMessages.push(
