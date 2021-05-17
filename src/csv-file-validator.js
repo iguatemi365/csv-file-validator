@@ -21,7 +21,7 @@
 			Papa.parse(csvFile, {
 				skipEmptyLines: true,
 				complete: function (results) {
-					resolve(_prepareDataAndValidateFile(results.data, config));
+					resolve(_prepareDataAndValidateFile(results, results.data, config));
 				},
 				error: function (error, file) {
 					reject({ error: error, file: file });
@@ -35,13 +35,12 @@
 	 * @param {Object} config
 	 * @private
 	 */
-	function _prepareDataAndValidateFile(csvData, config) {
+	function _prepareDataAndValidateFile(csvResult, csvData, config) {
 		const file = {
 			inValidMessages: [],
 			data: []
 		};
 
-		var csvData = csvResult.data;
         var generalConfig = config.generalConfig;
 
         if(generalConfig !== undefined){
