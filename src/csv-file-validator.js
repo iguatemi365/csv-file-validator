@@ -68,10 +68,6 @@
 				}
 			}
 
-			if (row.length < headers.length) {
-				return;
-			}
-
 			row.forEach(function (columnValue, columnIndex) {
 				const valueConfig = config.headers[columnIndex];
 
